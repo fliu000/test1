@@ -6,30 +6,32 @@ k = 1.44 * 1E-17; % Adsorption constant (m3/molecule)
 T = 1000; % Total time (s)
 N = 10000; 
 p = T / N; % Discretizing time step
-t = (0 : N);
+t = (1 : N);
 
-t(0) = 0;
-gamma(0) = 0;
-c(0) = 0;
+t(1) = 0;
+gamma(1) = 0;
+c(1) = 0;
 
-t(1) = 1;
-gamma(1) = 2 * c0 * (D * t);
-c(1) = 1/k * gamma(1) / (gamma_m - gamma(1));
+t(2) = 1;
+gamma(2) = 2 * c0 * (D * p);
+c(2) = 1/k * gamma(2) / (gamma_m - gamma(2));
 
-for n = 2 : N
-    t(n) = n * p;
+for n = 3 : N
+    t(n) = (n - 1) * p;
     M = 0;
-    for i = 1 : n
+    for i = 1 : (n - 2)
         a = (i + 1) ^ (1/2) - i ^ (1/2);
         b = (i + 1) ^ (3/2) - i ^ (3/2);
         M = M + 2 * p ^ (1/2) * (c(n-i) * a + (1/3 * b - i * a) * (c(n-i-1) - c(n-i)));
     end
-    solve(gamma_m * k * c(n) / (1 + k * c(n)) - (D / pi) ^ (1/2) * (2 * c0 * (t(n)) ^ (1/2) - 4/3 * p ^ (1/2) * c(n) - 2/3 * p ^ (1/2) * c(n-1) - M), c(n));
-    disp(c(n));
-    gamma(n) = gamma_m * k * c(n) / (1 + k * c(n));
+    solve(gamma_m * k * x / (1 + k * x) - (D / pi) ^ (1/2) * (2 * c0 * (t(n)) ^ (1/2) - 4/3 * p ^ (1/2) * x - 2/3 * p ^ (1/2) * c(n-1) - M) == 0, x)
+    % solve function gives two values of x,
+    disp(x);
+    % c(n) = positive(x);
+    gamma(n) = gamma_m * k * x / (1 + k * x);
     disp(gamma(n));
     
-    S(n) = - k * 298 * gamma_m * ln(1 - gamma(n) / gamma_m); % Surface pressure
+    %S(n) = - k * 298 * gamma_m * ln(1 - gamma(n) / gamma_m); % Surface pressure
     
-    plot(t(n), S(n));
+    %plot(t(n), S(n));
 end
