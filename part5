@@ -2,11 +2,11 @@ D = 2.5 * 1E-10; % Diffusion coefficient (m2/s)
 gamma_m = 3.2 * 1E18; % Surface excess coverage (molecule/m2)
 c0 = 3.08 * 1E22; % Surface concentration (molecule/m3)
 k = 1.44 * 1E-17; % Adsorption constant (m3/molecule)
-kb =  1.38 * 1E-23 % Boltzmann constant (m2.kg/(s2.K))
+kb =  1.38 * 1E-23; % Boltzmann constant (m2.kg/(s2.K))
 syms x;
 
-Q = 100; % Total time (s)
-W = 100; 
+Q = 1000; % Total time (s)
+W = 50; 
 p = Q / W; % Discretizing time step
 t = (1 : W+1);
 c = (1 : W+1);
@@ -21,7 +21,7 @@ S(1) = 0;
 t(2) = 1;
 gamma(2) = 2 * c0 * sqrt(D * p / pi);
 c(2) = 1/k * gamma(2) / (gamma_m - gamma(2));
-S(2) = - k * 298 * gamma_m * log10(1 - gamma(2) / gamma_m);
+S(2) = - kb * 298 * gamma_m * log10(1 - gamma(2) / gamma_m);
 
 for n = 3 : (W+1) 
     t(n) = (n - 1) * p;
@@ -38,7 +38,7 @@ for n = 3 : (W+1)
     % disp(c(n));
     gamma(n) = gamma_m * k * c(n) / (1 + k * c(n));
     % disp(gamma(n));
-    S(n) = - k * 298 * gamma_m * log10(1 - gamma(n) / gamma_m); % Surface pressure
+    S(n) = - kb * 298 * gamma_m * log10(1 - gamma(n) / gamma_m); % Surface pressure
     % disp(S(n));
 end
 clf;
