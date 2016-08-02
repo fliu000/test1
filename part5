@@ -7,8 +7,8 @@ St0 = 0.036; % Clean surface tension between water and toluene (N/m = kg/s2)
 T = 298; % Temperature (K)
 syms x;
 
-Q = 10; % Total time (s)
-W = 10000; 
+Q = 1000; % Total time (s)
+W = 100; 
 p = Q / W; % Discretizing time step
 t = (1 : W+1);
 c = (1 : W+1);
@@ -47,6 +47,6 @@ end
 clf;
 % plot(t, c, 'red');
 % hold on
-plot(t, gamma, 'blue');
-hold on
-plot (t, S, 'green');
+% plot(t, gamma, 'blue');
+% hold on
+plot (t, St, 'green');
