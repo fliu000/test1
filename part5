@@ -2,13 +2,13 @@ D = 2.5E-10; % Diffusion coefficient (m2/s)
 gamma_m = 3.2E18; % Surface excess coverage (molecule/m2)
 c0 = 3.08E22; % Surface concentration (molecule/m3)
 k = 1.44E-17; % Adsorption constant (m3/molecule)
-kb =  1.38E-23; % Boltzmann constant (m2.kg/(s2.K))
+kb = 1.38E-23; % Boltzmann constant (m2.kg/(s2.K))
 St0 = 0.036; % Clean surface tension between water and toluene (N/m = kg/s2)
 T = 298; % Temperature (K)
 syms x;
 
 Q = 1000; % Total time (s)
-W = 100; 
+W = 1000; 
 p = Q / W; % Discretizing time step
 t = (1 : W+1);
 c = (1 : W+1);
@@ -44,9 +44,8 @@ for n = 3 : (W+1)
     St(n) = St0 + kb * T * gamma_m * log10(1 - gamma(n) / gamma_m); % Surface pressure
     % disp(S(n));
 end
-clf;
 % plot(t, c, 'red');
 % hold on
 % plot(t, gamma, 'blue');
 % hold on
-plot (t, St, 'green');
+plot (t, St, 'g#');
