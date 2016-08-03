@@ -16,8 +16,9 @@ T = 298; % Temperature (K)
 St0 = 0.036; % Clean surface tension between water and toluene (N/m)
 syms x1 x2; % The values of c1 and c2 are stored in x1 and x2
 
-Q = 1000; % Total time (s)
-W = 1000; % Divide into W time interval % The higher W is, the more accurate the simulation is % Normally W >= Q gives good result
+Q = 10000; % Total time (s)
+W = 10000; % Divide into W time interval % The higher W is, the more accurate the simulation is 
+% Normally W >= Q gives better result
 p = Q / W; % Discretizing time step
 
 t = (1 : W+1); % Define the range of t
@@ -79,8 +80,8 @@ for n = 3 : (W+1)
     % disp(c1(n));
     % disp(c2(n));
     
-    gamma1(n) = gamma_m * k1 * c1(n) / (1 + k1 * c1(n) + k2 * c2(n)); % Surface coverage of component 1
-    gamma2(n) = gamma_m * k2 * c2(n) / (1 + k1 * c1(n) + k2 * c2(n)); % Surface coverage of component 2
+    gamma1(n) = gamma_m * k1 * c1(n) / (1 + k1 * c1(n) + k2 * c2(n)); % Surface coverage of component 1 from Langmuir isotherm
+    gamma2(n) = gamma_m * k2 * c2(n) / (1 + k1 * c1(n) + k2 * c2(n)); % Surface coverage of component 2 from Langmuir isotherm
     % disp(gamma1(n));
     % disp(gamma2(n));
     
