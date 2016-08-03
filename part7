@@ -1,27 +1,33 @@
 % Binary system
+% Experimental IFT data from Freer and Radke
 
-D1 = 2.5E-10; % Diffusion coefficient (m2/s)
-D2 = 2.5E-10; % Diffusion coefficient (m2/s)
-gamma_m = 3.2E18; % Surface excess coverage (molecule/m2)
-cb1 = 1.42E21; % Surface concentration (molecule/m3)
-cb2 = 3.08E22; % Surface concentration (molecule/m3)
-k1 = 9.47E-22; % Adsorption constant (m3/molecule)
-k2 = 2.13E-19; % Adsorption constant (m3/molecule)
+% List all the known parameters
+D1 = 2.5E-10; % Diffusion coefficient of component 1 (m2/s)
+D2 = 2.5E-10; % Diffusion coefficient of component 2 (m2/s)
+gamma_m = 3.2E18; % Surface excess coverage for both components, assumed to be the same (molecule/m2)
+cb1 = 2.7E21; % Initial bulk concentration of component 1 (molecule/m3)
+cb2 = 1.65E22; % Initial bulk concentration of component 2 (molecule/m3) 
+% cb1 < cb2
+k1 = 6.37E-22; % Adsorption constant of component 1 (m3/molecule)
+k2 = 8.57E-24; % Adsorption constant of component 2 (m3/molecule)
+% k1 > k2
 kb = 1.38E-23; % Boltzmann constant (m2.kg/(s2.K))
 T = 298; % Temperature (K)
 St0 = 0.036; % Clean surface tension between water and toluene (N/m)
-syms x1 x2;
+syms x1 x2; % The values of c1 and c2 are stored in x1 and x2
 
-Q = 100; % Total time (s), 1000
-W = 500; % 500
+Q = 1000; % Total time (s)
+W = 1000; % Divide into W time interval % The higher W is, the more accurate the simulation is % Normally W >= Q gives good result
 p = Q / W; % Discretizing time step
-t = (1 : W+1);
-c1 = (1 : W+1);
-c2 = (1 : W+1);
-gamma1 = (1 : W+1);
-gamma2 = (1 : W+1);
-St = (1 : W+1);
 
+t = (1 : W+1); % Define the range of t
+c1 = (1 : W+1); % Define the range of subsurface concentration c1
+c2 = (1 : W+1); % Define the range of subsurface concentration c2
+gamma1 = (1 : W+1); % Define the range of surface coverage gamma1
+gamma2 = (1 : W+1); % Define the range of surface coverage gamma2
+St = (1 : W+1); % Define the range of dynamic interfacial tension St
+
+% When n = 1, i.e. t = 0
 t(1) = 0;
 gamma1(1) = 0;
 gamma2(1) = 0;
@@ -29,12 +35,13 @@ c1(1) = 0;
 c2(1) = 0;
 St(1) = 0;
 
+% When n = 2
 t(2) = p;
-gamma1(2) = 2 * cb1 * sqrt(D1 * p / pi);
-gamma2(2) = 2 * cb2 * sqrt(D2 * p / pi);
-c1(2) = 1/k1 * gamma1(2) / (gamma_m - gamma1(2) - gamma2(2));
-c2(2) = 1/k2 * gamma2(2) / (gamma_m - gamma1(2) - gamma2(2));
-St(2) = St0 + kb * T * gamma_m * log10(1 - (gamma1(2) + gamma2(2)) / gamma_m);
+gamma1(2) = 2 * cb1 * sqrt(D1 * p / pi); % At short times, assume only adsorption
+gamma2(2) = 2 * cb2 * sqrt(D2 * p / pi); % At short times, assume only adsorption
+c1(2) = 1/k1 * gamma1(2) / (gamma_m - gamma1(2) - gamma2(2)); % Langmuir isotherm
+c2(2) = 1/k2 * gamma2(2) / (gamma_m - gamma1(2) - gamma2(2)); % Langmuir isotherm 
+St(2) = St0 + kb * T * gamma_m * log10(1 - (gamma1(2) + gamma2(2)) / gamma_m); % Dynamic IFT for binary mixture
 
 for n = 3 : (W+1) 
     t(n) = (n - 1) * p;
@@ -47,15 +54,16 @@ for n = 3 : (W+1)
         M2 = M2 + 2 * p ^ (1/2) * (c2(n-i+1) * alpha + (1/3 * beta - i * alpha) * (c2(n-i) - c2(n-i+1)));
     end
     
-    F1 = gamma_m * k1 * x1 / (1 + k1 * x1 + k2 * x2) - (D1 / pi) ^ (1/2) * (2 * cb1 * t(n) ^ (1/2) - 4/3 * p ^ (1/2) * x1 - 2/3 * p ^ (1/2) * c1(n-1) - M1);
-    F2 = gamma_m * k2 * x2 / (1 + k1 * x1 + k2 * x2) - (D2 / pi) ^ (1/2) * (2 * cb2 * t(n) ^ (1/2) - 4/3 * p ^ (1/2) * x2 - 2/3 * p ^ (1/2) * c2(n-1) - M2);
-    d = vpasolve([F1 == 0,F2 == 0], [x1, x2]); % Solve for c1(n) and c2(n) % vpasolve gives numeric value
+    F1 = gamma_m * k1 * x1 / (1 + k1 * x1 + k2 * x2) - (D1 / pi) ^ (1/2) * (2 * cb1 * t(n) ^ (1/2) - 4/3 * p ^ (1/2) * x1 - 2/3 * p ^ (1/2) * c1(n-1) - M1); % gamma(Langmuir isotherm) - gamma(Ward-Tordai eqn)
+    F2 = gamma_m * k2 * x2 / (1 + k1 * x1 + k2 * x2) - (D2 / pi) ^ (1/2) * (2 * cb2 * t(n) ^ (1/2) - 4/3 * p ^ (1/2) * x2 - 2/3 * p ^ (1/2) * c2(n-1) - M2); % gamma(Langmuir isotherm) - gamma(Ward-Tordai eqn)
+    d = vpasolve([F1 == 0,F2 == 0], [x1, x2]); % Two equations for two variables % vpasolve gives numeric value
+    % Solve for c1(n) and c2(n), which are stored in x1 and x2  
  
-    % Address the elements of the solution matrix
-    e1 = d.x1; % Solution for x1
-    e2 = d.x2; % Solution for x2
+    % The solution matrix is [x1, x2], address the elements of the matrix 
+    e1 = d.x1; % Solution matrix for x1
+    e2 = d.x2; % Solution matrix for x2
     
-    % Equations give three sets of values for x1 and x2, which should be both positive 
+    % Two equations give three sets of solutions for x1 and x2, which should be both positive 
     if (e1(1) > 0 && e2(1) > 0)
        c1(n) = e1(1);
        c2(n) = e2(1);
@@ -71,13 +79,13 @@ for n = 3 : (W+1)
     % disp(c1(n));
     % disp(c2(n));
     
-    gamma1(n) = gamma_m * k1 * c1(n) / (1 + k1 * c1(n) + k2 * c2(n));
-    gamma2(n) = gamma_m * k2 * c2(n) / (1 + k1 * c1(n) + k2 * c2(n));
+    gamma1(n) = gamma_m * k1 * c1(n) / (1 + k1 * c1(n) + k2 * c2(n)); % Surface coverage of component 1
+    gamma2(n) = gamma_m * k2 * c2(n) / (1 + k1 * c1(n) + k2 * c2(n)); % Surface coverage of component 2
     % disp(gamma1(n));
     % disp(gamma2(n));
     
-    St(n) = St0 + kb * T * gamma_m * log10(1 - (gamma1(n) + gamma2(n)) / gamma_m); % Interfacial surface tension
-    % disp(S(n));
+    St(n) = St0 + kb * T * gamma_m * log10(1 - (gamma1(n) + gamma2(n)) / gamma_m); % IFT of binary system
+    % disp(S(n));       
 end
 
 % plot(t, c1, 'r+');
@@ -87,3 +95,8 @@ end
 % hold on
 % plot(t, gamma2, 'b--o');
  plot (t, St, 'g-');
+ hold on
+ dataSet = load('DataSetFreer.rtf'); % Load Freer's data and show in the same graph
+ r = dataSet(:,1); % Time
+ s = dataSet(:,2)/1000; % Dynamic IFT (original data is in the unit of mN/m)
+ plot(r, s, 'mo');
