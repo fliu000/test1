@@ -48,4 +48,4 @@ end
 % hold on
 % plot(t, gamma, 'blue');
 % hold on
-plot (t, St, 'g#');
+plot (t, St, 'g-.');
