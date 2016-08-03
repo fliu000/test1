@@ -1,19 +1,19 @@
 % Binary system
 
-D1 = 2.8E-10; % Diffusion coefficient (m2/s)
-D2 = 2.8E-10; % Diffusion coefficient (m2/s)
-gamma_m = 2.438E18; % Surface excess coverage (molecule/m2)
-cb1 = 1.806E23; % Surface concentration (molecule/m3)
-cb2 = 9.15E23; % Surface concentration (molecule/m3)
-k1 = 5.728E-23; % Adsorption constant (m3/molecule)
-k2 = 5.593E-24; % Adsorption constant (m3/molecule)
+D1 = 2.5E-10; % Diffusion coefficient (m2/s)
+D2 = 2.5E-10; % Diffusion coefficient (m2/s)
+gamma_m = 3.2E18; % Surface excess coverage (molecule/m2)
+cb1 = 1.42E21; % Surface concentration (molecule/m3)
+cb2 = 3.08E22; % Surface concentration (molecule/m3)
+k1 = 9.47E-22; % Adsorption constant (m3/molecule)
+k2 = 2.13E-19; % Adsorption constant (m3/molecule)
 kb = 1.38E-23; % Boltzmann constant (m2.kg/(s2.K))
 T = 298; % Temperature (K)
 St0 = 0.036; % Clean surface tension between water and toluene (N/m)
 syms x1 x2;
 
-Q = 500; % Total time (s), 1000
-W = 1000; % 500
+Q = 100; % Total time (s), 1000
+W = 500; % 500
 p = Q / W; % Discretizing time step
 t = (1 : W+1);
 c1 = (1 : W+1);
@@ -37,3 +37,53 @@ c2(2) = 1/k2 * gamma2(2) / (gamma_m - gamma1(2) - gamma2(2));
 St(2) = St0 + kb * T * gamma_m * log10(1 - (gamma1(2) + gamma2(2)) / gamma_m);
 
 for n = 3 : (W+1) 
+    t(n) = (n - 1) * p;
+    M1 = 0;
+    M2 = 0;
+    for i = 1 : (n - 1)
+        alpha = (i + 1) ^ (1/2) - i ^ (1/2);
+        beta = (i + 1) ^ (3/2) - i ^ (3/2);
+        M1 = M1 + 2 * p ^ (1/2) * (c1(n-i+1) * alpha + (1/3 * beta - i * alpha) * (c1(n-i) - c1(n-i+1)));
+        M2 = M2 + 2 * p ^ (1/2) * (c2(n-i+1) * alpha + (1/3 * beta - i * alpha) * (c2(n-i) - c2(n-i+1)));
+    end
+    
+    F1 = gamma_m * k1 * x1 / (1 + k1 * x1 + k2 * x2) - (D1 / pi) ^ (1/2) * (2 * cb1 * t(n) ^ (1/2) - 4/3 * p ^ (1/2) * x1 - 2/3 * p ^ (1/2) * c1(n-1) - M1);
+    F2 = gamma_m * k2 * x2 / (1 + k1 * x1 + k2 * x2) - (D2 / pi) ^ (1/2) * (2 * cb2 * t(n) ^ (1/2) - 4/3 * p ^ (1/2) * x2 - 2/3 * p ^ (1/2) * c2(n-1) - M2);
+    d = vpasolve([F1 == 0,F2 == 0], [x1, x2]); % Solve for c1(n) and c2(n) % vpasolve gives numeric value
+ 
+    % Address the elements of the solution matrix
+    e1 = d.x1; % Solution for x1
+    e2 = d.x2; % Solution for x2
+    
+    % Equations give three sets of values for x1 and x2, which should be both positive 
+    if (e1(1) > 0 && e2(1) > 0)
+       c1(n) = e1(1);
+       c2(n) = e2(1);
+    else
+        if (e1(2) > 0 && e2(2) > 0)
+            c1(n) = e1(2);
+            c2(n) = e2(2);
+        else
+            c1(n) = e1(3);
+            c2(n) = e2(3);
+        end
+    end
+    % disp(c1(n));
+    % disp(c2(n));
+    
+    gamma1(n) = gamma_m * k1 * c1(n) / (1 + k1 * c1(n) + k2 * c2(n));
+    gamma2(n) = gamma_m * k2 * c2(n) / (1 + k1 * c1(n) + k2 * c2(n));
+    % disp(gamma1(n));
+    % disp(gamma2(n));
+    
+    St(n) = St0 + kb * T * gamma_m * log10(1 - (gamma1(n) + gamma2(n)) / gamma_m); % Interfacial surface tension
+    % disp(S(n));
+end
+
+% plot(t, c1, 'r+');
+% hold on
+% plot(t, c2, 'b+');
+% plot(t, gamma1, 'r--o');
+% hold on
+% plot(t, gamma2, 'b--o');
+ plot (t, St, 'g-');
