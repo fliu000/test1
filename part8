@@ -1,24 +1,25 @@
 % Ternary system
+% Experiment IFT from Freer and Radke
 
 D1 = 2.5E-10; % Diffusion coefficient of component 1 (m2/s)
 D2 = 2.5E-10; % Diffusion coefficient of component 2 (m2/s)
 D3 = 2.5E-10; % Diffusion coefficient of component 3 (m2/s)
-gamma_m = 3.2E18;  % Surface excess coverage for all components, assumed to be the same (molecule/m2)
-cb1 = 1.42E21; % Initial bulk concentration of component 1 (molecule/m3)
-cb2 = 3.08E22; % Initial bulk concentration of component 2 (molecule/m3)
-cb3 = 5.08E23; % Initial bulk concentration of component 3 (molecule/m3)
+gamma_m = 3.27E18;  % Surface excess coverage for all components, assumed to be the same (molecule/m2)
+cb1 = 5.98879E18; % Initial bulk concentration of component 1 (molecule/m3)
+cb2 = 3.10E21; % Initial bulk concentration of component 2 (molecule/m3)
+cb3 = 3.44592E22; % Initial bulk concentration of component 3 (molecule/m3)
 % cb1 < cb2 < cb3
-k1 = 9.47E-22; % Adsorption constant of component 1 (m3/molecule)
-k2 = 5.13E-24; % Adsorption constant of component 2 (m3/molecule)
-k3 = 2.13E-25; % Adsorption constant of component 3 (m3/molecule)
+k1 = 6.69E-20; % Adsorption constant of component 1 (m3/molecule)
+k2 = 3.21E-22; % Adsorption constant of component 2 (m3/molecule)
+k3 = 6.36E-24; % Adsorption constant of component 3 (m3/molecule)
 % k1 > k2 > k3
 kb =  1.38E-23; % Boltzmann constant (m2.kg/(s2.K))
 T = 298; % Temperature (K)
 St0 = 0.036; % Clean surface tension between water and toluene (N/m)
 syms x1 x2 x3; % The values of c1, c2 and c3 are stored in x1, x2 and x3
 
-Q = 100; % Total time (s)
-W = 500; % Divide into W time interval % The higher W is, the more accurate the simulation is 
+Q = 10000; % Total time (s)
+W = 5000; % Divide into W time interval % The higher W is, the more accurate the simulation is 
 % Normally W >= Q gives better result
 p = Q / W; % Discretizing time step
 
@@ -50,6 +51,8 @@ c1(2) = 1/k1 * gamma1(2) / (gamma_m - gamma1(2) - gamma2(2) - gamma3(2)); % Lang
 c2(2) = 1/k2 * gamma2(2) / (gamma_m - gamma1(2) - gamma2(2) - gamma3(2)); % Langmuir isotherm
 c3(2) = 1/k3 * gamma3(2) / (gamma_m - gamma1(2) - gamma2(2) - gamma3(2)); % Langmuir isotherm
 St(2) = St0 + kb * T * gamma_m * log10(1 - (gamma1(2) + gamma2(2) + gamma3(2)) / gamma_m); % Dynamic IFT for binary mixture
+
+tic;
 
 for n = 3 : (W+1) 
     t(n) = (n - 1) * p;
@@ -123,6 +126,9 @@ clf;
 % hold on
 % plot(t, gamma3, 'c--o');
 % hold on
+
+toc
+
  plot (t, St, 'g*');
  hold on
  dataSet = load('DataSetFreer.rtf'); % Load Freer's data and show in the same graph
