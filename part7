@@ -99,6 +99,7 @@ dataSet = load('DataSetFreer.rtf'); % Load Freer's data and show in the same gra
 r = dataSet(:,1); % Time
 s = dataSet(:,2)/1000; % Dynamic IFT (original data is in the unit of mN/m)
 plot(r, s, 'mo');
+hold off
 
 figure
 plot(t, c1, 'r+');
@@ -110,8 +111,10 @@ figure
 plot(t, gamma1, 'r--o');
 hold on
 plot(t, gamma2, 'b--o');
+hold off
  
 figure
 plot(c1, gamma1, 'r-.');
 hold on
 plot(c2, gamma2, 'b-.'); 
+hold off
