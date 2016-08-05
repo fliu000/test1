@@ -16,8 +16,8 @@ T = 298; % Temperature (K)
 St0 = 0.036; % Clean surface tension between water and toluene (N/m)
 syms x1 x2; % The values of c1 and c2 are stored in x1 and x2
 
-Q = 10000; % Total time (s)
-W = 10000; % Divide into W time interval % The higher W is, the more accurate the simulation is 
+Q = 100000; % Total time (s)
+W = 100000; % Divide into W time interval % The higher W is, the more accurate the simulation is while it takes more time to compute
 % Normally W >= Q gives better result
 p = Q / W; % Discretizing time step
 
@@ -44,6 +44,7 @@ c1(2) = 1/k1 * gamma1(2) / (gamma_m - gamma1(2) - gamma2(2)); % Langmuir isother
 c2(2) = 1/k2 * gamma2(2) / (gamma_m - gamma1(2) - gamma2(2)); % Langmuir isotherm 
 St(2) = St0 + kb * T * gamma_m * log10(1 - (gamma1(2) + gamma2(2)) / gamma_m); % Dynamic IFT for binary mixture
 
+tic;
 for n = 3 : (W+1) 
     t(n) = (n - 1) * p;
     M1 = 0;
@@ -86,18 +87,31 @@ for n = 3 : (W+1)
     % disp(gamma2(n));
     
     St(n) = St0 + kb * T * gamma_m * log10(1 - (gamma1(n) + gamma2(n)) / gamma_m); % IFT of binary system
-    % disp(S(n));       
+    % disp(S(n));    
 end
+toc
+clf;
 
-% plot(t, c1, 'r+');
-% hold on
-% plot(t, c2, 'b+');
-% plot(t, gamma1, 'r--o');
-% hold on
-% plot(t, gamma2, 'b--o');
- plot (t, St, 'g-');
- hold on
- dataSet = load('DataSetFreer.rtf'); % Load Freer's data and show in the same graph
- r = dataSet(:,1); % Time
- s = dataSet(:,2)/1000; % Dynamic IFT (original data is in the unit of mN/m)
- plot(r, s, 'mo');
+figure
+plot (t, St, 'c-'); 
+hold on
+dataSet = load('DataSetFreer.rtf'); % Load Freer's data and show in the same graph
+r = dataSet(:,1); % Time
+s = dataSet(:,2)/1000; % Dynamic IFT (original data is in the unit of mN/m)
+plot(r, s, 'mo');
+
+figure
+plot(t, c1, 'r+');
+hold on
+plot(t, c2, 'b+');
+hold off
+ 
+figure
+plot(t, gamma1, 'r--o');
+hold on
+plot(t, gamma2, 'b--o');
+ 
+figure
+plot(c1, gamma1, 'r-.');
+hold on
+plot(c2, gamma2, 'b-.'); 
