@@ -17,7 +17,7 @@ St0 = 0.036; % Clean surface tension between water and toluene (N/m)
 syms x1 x2; % The values of c1 and c2 are stored in x1 and x2
 
 Q = 100000; % Total time (s)
-W = 100000; % Divide into W time interval % The higher W is, the more accurate the simulation is while it takes more time to compute
+W = 50000; % Divide into W time interval % The higher W is, the more accurate the simulation is while it takes more time to compute
 % Normally W >= Q gives better result
 p = Q / W; % Discretizing time step
 
@@ -93,28 +93,28 @@ toc
 clf;
 
 figure
-plot (t, St, 'c-'); 
+semilogx(t, St, 'c-'); 
 hold on
 dataSet = load('DataSetFreer.rtf'); % Load Freer's data and show in the same graph
 r = dataSet(:,1); % Time
 s = dataSet(:,2)/1000; % Dynamic IFT (original data is in the unit of mN/m)
-plot(r, s, 'mo');
-hold off
+semilogx(r, s, '-s');
+grid on
 
 figure
 plot(t, c1, 'r+');
 hold on
 plot(t, c2, 'b+');
-hold off
+grid on
  
 figure
 plot(t, gamma1, 'r--o');
 hold on
 plot(t, gamma2, 'b--o');
-hold off
+grid on
  
 figure
-plot(c1, gamma1, 'r-.');
+loglog(c1, gamma1, 'r-.');
 hold on
-plot(c2, gamma2, 'b-.'); 
-hold off
+loglog(c2, gamma2, 'b-.'); 
+grid on
