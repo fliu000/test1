@@ -5,9 +5,9 @@ D1 = 2.5E-10; % Diffusion coefficient of component 1 (m2/s)
 D2 = 2.5E-10; % Diffusion coefficient of component 2 (m2/s)
 D3 = 2.5E-10; % Diffusion coefficient of component 3 (m2/s)
 gamma_m = 3.27E18;  % Surface excess coverage for all components, assumed to be the same (molecule/m2)
-cb1 = 5.98879E18; % Initial bulk concentration of component 1 (molecule/m3)
+cb1 = 5.99E18; % Initial bulk concentration of component 1 (molecule/m3)
 cb2 = 3.10E21; % Initial bulk concentration of component 2 (molecule/m3)
-cb3 = 3.44592E22; % Initial bulk concentration of component 3 (molecule/m3)
+cb3 = 3.45E22; % Initial bulk concentration of component 3 (molecule/m3)
 % cb1 < cb2 < cb3
 k1 = 6.69E-20; % Adsorption constant of component 1 (m3/molecule)
 k2 = 3.21E-22; % Adsorption constant of component 2 (m3/molecule)
@@ -18,8 +18,9 @@ T = 298; % Temperature (K)
 St0 = 0.036; % Clean surface tension between water and toluene (N/m)
 syms x1 x2 x3; % The values of c1, c2 and c3 are stored in x1, x2 and x3
 
-Q = 1000; % Total time (s)
-W = 1000; % Divide into W time interval % The higher W is, the more accurate the simulation is 
+Q = 100; % Total time (s)
+W = 100; % Divide into W time interval 
+% The higher W is, the more accurate the simulation is 
 % Normally W >= Q gives better result
 p = Q / W; % Discretizing time step
 
@@ -77,28 +78,14 @@ for n = 3 : (W+1)
     e2 = d.x2; % Solution matrix for x2
     e3 = d.x3; % Solution matrix for x3
     
-     % Three quations give four sets of solutions for x1, x2 and x3, which should be all positive 
-    if (e1(1) > 0 && e2(1) > 0 && e3(1) > 0)
-       c1(n) = e1(1);
-       c2(n) = e2(1);
-       c3(n) = e3(1);
-    else
-        if (e1(2) > 0 && e2(2) > 0 && e3(2) > 0)
-            c1(n) = e1(2);
-            c2(n) = e2(2);
-            c3(n) = e3(2);
-        else
-            if (e1(3) > 0 && e2(3) > 0 && e3(3) > 0)
-                c1(n) = e1(3);
-                c2(n) = e2(3);
-                c3(n) = e3(3);
-            else
-                c1(n) = e1(4);
-                c2(n) = e2(4);
-                c3(n) = e3(4);
-            end
-        end
+     % Three equations give four sets of solutions for x1, x2 and x3, which should be all positive 
+    j = 1;
+    while (e1(j) < 0 || e2(j) < 0 || e3(j) < 0);
+        j = j + 1;
     end
+    c1(n) = e1(j);
+    c2(n) = e2(j);
+    c3(n) = e3(j);
     % disp(c1(n));
     % disp(c2(n));
     % disp(c3(n));
@@ -117,7 +104,7 @@ toc
 
 clf; % Clear current figure window
 figure
-semilogx(t, St, 'mo'); 
+semilogx(t, St, 'm-v'); 
 hold on
 dataSet = load('DataSetFreer.rtf'); % Load Freer's data and show in the same graph
 r = dataSet(:,1); % Time
