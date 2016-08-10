@@ -1,5 +1,5 @@
 % Binary system
-% Experimental IFT data from Freer and Radke
+% Experimental IFT data from Freer and Radke (Save as 'DataSetFreer.rtf' in MatLab folder before running the code)
 
 % List all the known parameters
 D1 = 2.5E-10; % Diffusion coefficient of component 1 (m2/s)
@@ -16,8 +16,8 @@ T = 298; % Temperature (K)
 St0 = 0.036; % Clean surface tension between water and toluene (N/m)
 syms x1 x2; % The values of c1 and c2 are stored in x1 and x2
 
-Q = 10000; % Total time (s)
-W = 10000; % Divide into W time interval % The higher W is, the more accurate the simulation is while it takes more time to compute
+Q = 1000; % Total time (s)
+W = 1000; % Divide into W time interval % The higher W is, the more accurate the simulation is while it takes more time to compute
 % Normally W >= Q gives better result
 p = Q / W; % Discretizing time step
 
@@ -44,7 +44,7 @@ c1(2) = 1/k1 * gamma1(2) / (gamma_m - gamma1(2) - gamma2(2)); % Langmuir isother
 c2(2) = 1/k2 * gamma2(2) / (gamma_m - gamma1(2) - gamma2(2)); % Langmuir isotherm 
 St(2) = St0 + kb * T * gamma_m * log10(1 - (gamma1(2) + gamma2(2)) / gamma_m); % Dynamic IFT for binary mixture
 
-tic;
+tic; % To estimate simulation time
 for n = 3 : (W+1) 
     t(n) = (n - 1) * p;
     M1 = 0;
@@ -90,8 +90,9 @@ for n = 3 : (W+1)
     % disp(S(n));    
 end
 toc
-clf;
 
+clf; % Clear current figure window
+figure
 semilogx(t, St, 'c-'); 
 hold on
 dataSet = load('DataSetFreer.rtf'); % Load Freer's data and show in the same graph
@@ -105,7 +106,7 @@ grid on
 
 figure
 plot(t, c1, 'r+', t, c2, 'b+');
-legend('Cs1', 'Cs2');
+legend('c1', 'c2');
 xlabel('Time(s)')
 ylabel('Subsurface concentration (molecule/m3)')
 grid on
@@ -119,7 +120,7 @@ grid on
  
 figure
 loglog(c1, gamma1, 'r-.', c2, gamma2, 'b-.');
-legend('gamma1 vs Cs1', 'gamma2 vs Cs2');
+legend('gamma1 vs c1', 'gamma2 vs c2');
 xlabel('Subsurface concentration (molecule/m3)')
 ylabel('Surface coverage (molecule/m2)')
 grid on
