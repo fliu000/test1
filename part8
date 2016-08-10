@@ -1,5 +1,5 @@
 % Ternary system
-% Experiment IFT from Freer and Radke
+% Experiment IFT from Freer and Radke (Save as 'DataSetFreer.rtf' in MatLab folder before running the code)
 
 D1 = 2.5E-10; % Diffusion coefficient of component 1 (m2/s)
 D2 = 2.5E-10; % Diffusion coefficient of component 2 (m2/s)
@@ -18,8 +18,8 @@ T = 298; % Temperature (K)
 St0 = 0.036; % Clean surface tension between water and toluene (N/m)
 syms x1 x2 x3; % The values of c1, c2 and c3 are stored in x1, x2 and x3
 
-Q = 10000; % Total time (s)
-W = 5000; % Divide into W time interval % The higher W is, the more accurate the simulation is 
+Q = 1000; % Total time (s)
+W = 1000; % Divide into W time interval % The higher W is, the more accurate the simulation is 
 % Normally W >= Q gives better result
 p = Q / W; % Discretizing time step
 
@@ -52,8 +52,7 @@ c2(2) = 1/k2 * gamma2(2) / (gamma_m - gamma1(2) - gamma2(2) - gamma3(2)); % Lang
 c3(2) = 1/k3 * gamma3(2) / (gamma_m - gamma1(2) - gamma2(2) - gamma3(2)); % Langmuir isotherm
 St(2) = St0 + kb * T * gamma_m * log10(1 - (gamma1(2) + gamma2(2) + gamma3(2)) / gamma_m); % Dynamic IFT for binary mixture
 
-tic;
-
+tic; % To estimate simulation time
 for n = 3 : (W+1) 
     t(n) = (n - 1) * p;
     M1 = 0;
@@ -114,24 +113,38 @@ for n = 3 : (W+1)
     St(n) = St0 + kb * T * gamma_m * log10(1 - (gamma1(n) + gamma2(n) + gamma3(n)) / gamma_m); % IFT of ternary system
     % disp(S(n));
 end
-clf;
-% plot(t, c1, 'r+');
-% hold on
-% plot(t, c2, 'b+');
-% hold on
-% plot(t, c3, 'c+');
-% plot(t, gamma1, 'r--o');
-% hold on
-% plot(t, gamma2, 'b--o');
-% hold on
-% plot(t, gamma3, 'c--o');
-% hold on
-
 toc
 
- plot (t, St, 'g*');
- hold on
- dataSet = load('DataSetFreer.rtf'); % Load Freer's data and show in the same graph
- r = dataSet(:,1); % Time
- s = dataSet(:,2)/1000; % Dynamic IFT (original data is in the unit of mN/m)
- plot(r, s, 'mo');
+clf; % Clear current figure window
+figure
+semilogx(t, St, 'mo'); 
+hold on
+dataSet = load('DataSetFreer.rtf'); % Load Freer's data and show in the same graph
+r = dataSet(:,1); % Time
+s = dataSet(:,2)/1000; % Dynamic IFT (original data is in the unit of mN/m)
+semilogx(r, s, '-s');
+legend('Simulation','Expt Data from Freer and Radke')
+xlabel('Time(s)')
+ylabel('Interfacial tension (N/m)')
+grid on
+
+figure
+plot(t, c1, 'r+', t, c2, 'b+', t, c3, 'k+');
+legend('c1', 'c2', 'c3');
+xlabel('Time(s)')
+ylabel('Subsurface concentration (molecule/m3)')
+grid on
+ 
+figure
+plot(t, gamma1, 'r--o', t, gamma2, 'b--o', t, gamma3, 'k--o');
+legend('gamma1', 'gamma2');
+xlabel('Time(s)')
+ylabel('Surface coverage (molecule/m2)')
+grid on
+ 
+figure
+loglog(c1, gamma1, 'r-.', c2, gamma2, 'b-.', c3, gamma3, 'k-.');
+legend('gamma1 vs c1', 'gamma2 vs c2', 'gamma3 vs c3');
+xlabel('Subsurface concentration (molecule/m3)')
+ylabel('Surface coverage (molecule/m2)')
+grid on
