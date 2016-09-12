@@ -1,5 +1,5 @@
 % Single component
-% Test with Sutherland Equation (linear case)
+% Compare with Sutherland Equation (linear case)
 % Experimental IFT from Freer and Radke
 
 D = 2.5E-10; % Diffusion coefficient (m2/s)
