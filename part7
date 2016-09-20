@@ -4,20 +4,20 @@
 % List all the known parameters
 D1 = 2.5E-10; % Diffusion coefficient of component 1 (m2/s)
 D2 = 2.5E-10; % Diffusion coefficient of component 2 (m2/s)
-gamma_m = 3.2E18; % Surface excess coverage for both components, assumed to be the same (molecule/m2)
-cb1 = 2.7E21; % Initial bulk concentration of component 1 (molecule/m3)
-cb2 = 1.65E22; % Initial bulk concentration of component 2 (molecule/m3) 
+gamma_m = 3.3E18; % Surface excess coverage for both components, assumed to be the same (molecule/m2)
+cb1 = 3.2E21; % Initial bulk concentration of component 1 (molecule/m3)
+cb2 = 3.45E22; % Initial bulk concentration of component 2 (molecule/m3) 
 % cb1 < cb2
-k1 = 6.37E-22; % Adsorption constant of component 1 (m3/molecule)
-k2 = 8.57E-24; % Adsorption constant of component 2 (m3/molecule)
+k1 = 3.61E-22; % Adsorption constant of component 1 (m3/molecule)
+k2 = 6.36E-24; % Adsorption constant of component 2 (m3/molecule)
 % k1 > k2
 kb = 1.38E-23; % Boltzmann constant (m2.kg/(s2.K))
 T = 298; % Temperature (K)
 St0 = 0.036; % Clean surface tension between water and toluene (N/m)
 syms x1 x2; % The values of c1 and c2 are stored in x1 and x2
 
-Q = 100; % Total time (s)
-W = 100; % Divide into W time interval % The higher W is, the more accurate the simulation is while it takes more time to compute
+Q = 10000; % Total time (s)
+W = 10000; % Divide into W time interval % The higher W is, the more accurate the simulation is while it takes more time to compute
 % Normally W >= Q gives better result
 p = Q / W; % Discretizing time step
 
@@ -27,6 +27,7 @@ c2 = (1 : W+1); % Define the range of subsurface concentration c2
 gamma1 = (1 : W+1); % Define the range of surface coverage gamma1
 gamma2 = (1 : W+1); % Define the range of surface coverage gamma2
 St = (1 : W+1); % Define the range of dynamic interfacial tension St
+Sp = (1 : W+1);
 
 % When n = 1, i.e. t = 0
 t(1) = 0;
@@ -34,7 +35,8 @@ gamma1(1) = 0;
 gamma2(1) = 0;
 c1(1) = 0;
 c2(1) = 0;
-St(1) = 0;
+St(1) = St0 + kb * T * gamma_m * log(1 - (gamma1(1) + gamma2(1)) / gamma_m); % Dynamic IFT for binary mixture
+Sp(1) = St0 - St(1);
 
 % When n = 2
 t(2) = p;
@@ -42,7 +44,8 @@ gamma1(2) = 2 * cb1 * sqrt(D1 * p / pi); % At short times, assume only adsorptio
 gamma2(2) = 2 * cb2 * sqrt(D2 * p / pi); % At short times, assume only adsorption
 c1(2) = 1/k1 * gamma1(2) / (gamma_m - gamma1(2) - gamma2(2)); % Langmuir isotherm
 c2(2) = 1/k2 * gamma2(2) / (gamma_m - gamma1(2) - gamma2(2)); % Langmuir isotherm 
-St(2) = St0 + kb * T * gamma_m * log10(1 - (gamma1(2) + gamma2(2)) / gamma_m); % Dynamic IFT for binary mixture
+St(2) = St0 + kb * T * gamma_m * log(1 - (gamma1(2) + gamma2(2)) / gamma_m); % Dynamic IFT for binary mixture
+Sp(2) = St0 - St(2);
 
 tic; % To estimate simulation time
 for n = 3 : (W+1) 
@@ -67,7 +70,7 @@ for n = 3 : (W+1)
     
     % Two equations give three sets of solutions for x1 and x2, which should be both positive 
     j = 1;
-    while (e1(j) < 0 || e2(j) < 0);
+    while (e1(j) < 0 || e2(j) < 0)
         j = j + 1;
     end
     c1(n) = e1(j);
@@ -80,41 +83,52 @@ for n = 3 : (W+1)
     % disp(gamma1(n));
     % disp(gamma2(n));
     
-    St(n) = St0 + kb * T * gamma_m * log10(1 - (gamma1(n) + gamma2(n)) / gamma_m); % IFT of binary system
-    % disp(S(n));    
+    St(n) = St0 + kb * T * gamma_m * log(1 - (gamma1(n) + gamma2(n)) / gamma_m); % IFT of binary system
+    % disp(S(n)); 
+    Sp(n) = St0 - St(n);
 end
 toc
 
-clf; % Clear current figure window
-figure
-semilogx(t, St, 'm-^'); 
-hold on
 dataSet = load('DataSetFreer.rtf'); % Load Freer's data and show in the same graph
 r = dataSet(:,1); % Time
 s = dataSet(:,2)/1000; % Dynamic IFT (original data is in the unit of mN/m)
-semilogx(r, s, '-s');
+
+figure
+semilogx(t, St, 'k-*'); 
+hold on
+semilogx(r, s, 'm-s');
 legend('Simulation','Expt Data from Freer and Radke')
 xlabel('Time(s)')
 ylabel('Interfacial tension (N/m)')
 grid on
 
 figure
-plot(t, c1, 'r+', t, c2, 'b+');
-legend('c1', 'c2');
-xlabel('Time(s)')
-ylabel('Subsurface concentration (molecule/m3)')
+t_axis = sqrt(t);
+r_axis = sqrt(r);
+s_axis = St0 - s;
+plot(t_axis, Sp, 'k-d', r_axis, s_axis, 'm-^' );
+legend('Simulation','Expt Data from Freer and Radke')
+xlabel('(Time(s))^(1/2)')
+ylabel('Surface pressure (N/m)')
 grid on
+
+% figure
+% plot(t, c1, 'r+', t, c2, 'b+');
+% legend('c1', 'c2');
+% xlabel('Time(s)')
+% ylabel('Subsurface concentration (molecule/m3)')
+% grid on
  
-figure
-plot(t, gamma1, 'r--o', t, gamma2, 'b--o');
-legend('gamma1', 'gamma2');
-xlabel('Time(s)')
-ylabel('Surface coverage (molecule/m2)')
-grid on
+% figure
+% semilogx(t, gamma1, 'r--o', t, gamma2, 'b--o');
+% legend('gamma1', 'gamma2');
+% xlabel('Time(s)')
+% ylabel('Surface coverage (molecule/m2)')
+% grid on
  
-figure
-loglog(c1, gamma1, 'r-.', c2, gamma2, 'b-.');
-legend('gamma1 vs c1', 'gamma2 vs c2');
-xlabel('Subsurface concentration (molecule/m3)')
-ylabel('Surface coverage (molecule/m2)')
-grid on
+% figure
+% loglog(c1, gamma1, 'r-.', c2, gamma2, 'b-.');
+% legend('gamma1 vs c1', 'gamma2 vs c2');
+% xlabel('Subsurface concentration (molecule/m3)')
+% ylabel('Surface coverage (molecule/m2)')
+% grid on
