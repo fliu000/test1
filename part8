@@ -5,7 +5,7 @@ D1 = 2.5E-10; % Diffusion coefficient of component 1 (m2/s)
 D2 = 2.5E-10; % Diffusion coefficient of component 2 (m2/s)
 D3 = 2.5E-10; % Diffusion coefficient of component 3 (m2/s)
 gamma_m = 3.27E18;  % Surface excess coverage for all components, assumed to be the same (molecule/m2)
-cb1 = 5.99E18; % Initial bulk concentration of component 1 (molecule/m3)
+cb1 = 1E20; % Initial bulk concentration of component 1 (molecule/m3)
 cb2 = 3.10E21; % Initial bulk concentration of component 2 (molecule/m3)
 cb3 = 3.45E22; % Initial bulk concentration of component 3 (molecule/m3)
 % cb1 < cb2 < cb3
