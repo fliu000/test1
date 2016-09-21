@@ -5,7 +5,7 @@ D1 = 2.5E-10; % Diffusion coefficient of component 1 (m2/s)
 D2 = 2.5E-10; % Diffusion coefficient of component 2 (m2/s)
 D3 = 2.5E-10; % Diffusion coefficient of component 3 (m2/s)
 gamma_m = 3.27E18;  % Surface excess coverage for all components, assumed to be the same (molecule/m2)
-cb1 = 1E20; % Initial bulk concentration of component 1 (molecule/m3)
+cb1 = 1.00E20; % Initial bulk concentration of component 1 (molecule/m3)
 cb2 = 3.10E21; % Initial bulk concentration of component 2 (molecule/m3)
 cb3 = 3.45E22; % Initial bulk concentration of component 3 (molecule/m3)
 % cb1 < cb2 < cb3
@@ -37,7 +37,7 @@ St = (1 : W+1); % Define the range of dynamic interfacial tension St
 t(1) = 0;
 gamma1(1) = 0;
 gamma2(1) = 0;
-gamma2(1) = 0;
+gamma3(1) = 0;
 c1(1) = 0;
 c2(1) = 0;
 c3(1) = 0;
@@ -51,7 +51,7 @@ gamma3(2) = 2 * cb3 * sqrt(D3 * p / pi); % At short times, assume only adsorptio
 c1(2) = 1/k1 * gamma1(2) / (gamma_m - gamma1(2) - gamma2(2) - gamma3(2)); % Langmuir isotherm 
 c2(2) = 1/k2 * gamma2(2) / (gamma_m - gamma1(2) - gamma2(2) - gamma3(2)); % Langmuir isotherm
 c3(2) = 1/k3 * gamma3(2) / (gamma_m - gamma1(2) - gamma2(2) - gamma3(2)); % Langmuir isotherm
-St(2) = St0 + kb * T * gamma_m * log10(1 - (gamma1(2) + gamma2(2) + gamma3(2)) / gamma_m); % Dynamic IFT for binary mixture
+St(2) = St0 + kb * T * gamma_m * log(1 - (gamma1(2) + gamma2(2) + gamma3(2)) / gamma_m); % Dynamic IFT for binary mixture
 
 tic; % To estimate simulation time
 for n = 3 : (W+1) 
@@ -97,41 +97,41 @@ for n = 3 : (W+1)
     % disp(gamma2(n));
     % disp(gamma3(n));
     
-    St(n) = St0 + kb * T * gamma_m * log10(1 - (gamma1(n) + gamma2(n) + gamma3(n)) / gamma_m); % IFT of ternary system
+    St(n) = St0 + kb * T * gamma_m * log(1 - (gamma1(n) + gamma2(n) + gamma3(n)) / gamma_m); % IFT of ternary system
     % disp(S(n));
 end
 toc
 
-clf; % Clear current figure window
-figure
-semilogx(t, St, 'm-v'); 
-hold on
 dataSet = load('DataSetFreer.rtf'); % Load Freer's data and show in the same graph
 r = dataSet(:,1); % Time
 s = dataSet(:,2)/1000; % Dynamic IFT (original data is in the unit of mN/m)
+
+figure
+semilogx(t, St, 'm-'); 
+hold on
 semilogx(r, s, '-s');
 legend('Simulation','Expt Data from Freer and Radke')
 xlabel('Time(s)')
 ylabel('Interfacial tension (N/m)')
 grid on
 
-figure
-plot(t, c1, 'r+', t, c2, 'b+', t, c3, 'k+');
-legend('c1', 'c2', 'c3');
-xlabel('Time(s)')
-ylabel('Subsurface concentration (molecule/m3)')
-grid on
+% figure
+% plot(t, c1, 'r+', t, c2, 'b+', t, c3, 'k+');
+% legend('c1', 'c2', 'c3');
+% xlabel('Time(s)')
+% ylabel('Subsurface concentration (molecule/m3)')
+% grid on
  
-figure
-plot(t, gamma1, 'r--o', t, gamma2, 'b--o', t, gamma3, 'k--o');
-legend('gamma1', 'gamma2');
-xlabel('Time(s)')
-ylabel('Surface coverage (molecule/m2)')
-grid on
+% figure
+% semilog(t, gamma1, 'r--o', t, gamma2, 'b--o', t, gamma3, 'k--o');
+% legend('gamma1', 'gamma2', 'gamma3');
+% xlabel('Time(s)')
+% ylabel('Surface coverage (molecule/m2)')
+% grid on
  
-figure
-loglog(c1, gamma1, 'r-.', c2, gamma2, 'b-.', c3, gamma3, 'k-.');
-legend('gamma1 vs c1', 'gamma2 vs c2', 'gamma3 vs c3');
-xlabel('Subsurface concentration (molecule/m3)')
-ylabel('Surface coverage (molecule/m2)')
-grid on
+% figure
+% loglog(c1, gamma1, 'r-.', c2, gamma2, 'b-.', c3, gamma3, 'k-.');
+% legend('gamma1 vs c1', 'gamma2 vs c2', 'gamma3 vs c3');
+% xlabel('Subsurface concentration (molecule/m3)')
+% ylabel('Surface coverage (molecule/m2)')
+% grid on
