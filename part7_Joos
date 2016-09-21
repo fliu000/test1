@@ -1,12 +1,12 @@
 % Binary system
-% Experimental IFT data from van den Bogaert and Joos Figure 9
+% Experimental IFT data from van den Bogaert and Joos Figure 6 & 7
 
 % List all the known parameters
 D1 = 2.8E-10; % Diffusion coefficient of sodium laurate (m2/s)
 D2 = 2.8E-10; % Diffusion coefficient of sodium myristate (m2/s)
 gamma_m = 4.1E-10 * 6.02E23 * 1E4; % Surface excess coverage for both components, assumed to be the same (molecule/m2)
-cb1 = 5E-7 * 6.02E23 * 1E6; % Initial bulk concentration of sodium laurate (molecule/m3)
-cb2 = 1E-7 * 6.02E23 * 1E6; % Initial bulk concentration of sodium myristate (molecule/m3) 
+cb1 = 1.52E-6 * 6.02E23 * 1E6; % Initial bulk concentration of sodium laurate (molecule/m3)
+cb2 = 3E-7 * 6.02E23 * 1E6; % Initial bulk concentration of sodium myristate (molecule/m3) 
 % cb1 < cb2
 k1 = 1 / 2.97E-7 / 6.02E23 * 1E-6; % Adsorption constant of sodium laurate (m3/molecule)
 k2 = 1 / 2.9E-8 / 6.02E23 * 1E-6; % Adsorption constant of sodium myristate (m3/molecule)
@@ -16,7 +16,7 @@ T = 298; % Temperature (K)
 St0 = 0.072; % Clean surface tension between water and toluene (N/m)
 syms x1 x2; % The values of c1 and c2 are stored in x1 and x2
 
-Q = 50; % Total time (s)
+Q = 0.5; % Total time (s)
 W = 1000; % Divide into W time interval % The higher W is, the more accurate the simulation is while it takes more time to compute
 % Normally W >= Q gives better result
 p = Q / W; % Discretizing time step
@@ -35,7 +35,7 @@ gamma1(1) = 0;
 gamma2(1) = 0;
 c1(1) = 0;
 c2(1) = 0;
-St(1) = St0 + kb * T * gamma_m * log10(1 - (gamma1(1) + gamma2(1)) / gamma_m);
+St(1) = St0 + kb * T * gamma_m * log(1 - (gamma1(1) + gamma2(1)) / gamma_m);
 Sp(1) = St0 - St(1);
 
 % When n = 2
@@ -44,7 +44,7 @@ gamma1(2) = 2 * cb1 * sqrt(D1 * p / pi); % At short times, assume only adsorptio
 gamma2(2) = 2 * cb2 * sqrt(D2 * p / pi); % At short times, assume only adsorption
 c1(2) = 1/k1 * gamma1(2) / (gamma_m - gamma1(2) - gamma2(2)); % Langmuir isotherm
 c2(2) = 1/k2 * gamma2(2) / (gamma_m - gamma1(2) - gamma2(2)); % Langmuir isotherm 
-St(2) = St0 + kb * T * gamma_m * log10(1 - (gamma1(2) + gamma2(2)) / gamma_m); % Dynamic IFT for binary mixture
+St(2) = St0 + kb * T * gamma_m * log(1 - (gamma1(2) + gamma2(2)) / gamma_m); % Dynamic IFT for binary mixture
 Sp(2) = St0 - St(2);
 
 tic;
@@ -89,25 +89,35 @@ for n = 3 : (W+1)
     % disp(gamma1(n));
     % disp(gamma2(n));
     
-    St(n) = St0 + kb * T * gamma_m * log10(1 - (gamma1(n) + gamma2(n)) / gamma_m); % IFT of binary system
+    St(n) = St0 + kb * T * gamma_m * log(1 - (gamma1(n) + gamma2(n)) / gamma_m); % IFT of binary system
     % disp(S(n)); 
     Sp(n) = St0 - St(n);
 end
 toc
 
-% dataSet = load('DataSetFreer.rtf'); % Load Freer's data and show in the same graph
-% r = dataSet(:,1); % Time
-% s = dataSet(:,2)/1000; % Dynamic IFT (original data is in the unit of mN/m)
+ dataSet1 = load('9square.rtf'); 
+ r1 = dataSet1(:,1)/1000; % Time
+ s1 = dataSet1(:,2)/1000; % Dynamic IFT (original data is in the unit of mN/m)
+ dataSet2 = load('9star.rtf');
+ r2 = dataSet2(:,1)/1000; % Time
+ s2 = dataSet2(:,2)/1000; % Dynamic IFT (original data is in the unit of mN/m)
+ dataSet3 = load('9plus.rtf');
+ r3 = dataSet3(:,1)/1000; % Time
+ s3 = dataSet3(:,2)/1000; % Dynamic IFT (original data is in the unit of mN/m)
 
 figure
-plot(t, St, 'c-'); 
-% hold on
-% semilogx(r, s, '-s');
-legend('Simulation')
+plot(t, St);
 xlabel('Time(s)')
 ylabel('Interfacial tension (N/m)')
 grid on
-% hold off
+
+ figure
+ plot(t, St, 'c', r1, s1, '.b', r2, s2, '*b', r3, s3, '+b'); 
+ legend('Simulation', 'Experiment1', 'Experiment2', 'Experiment3')
+ xlabel('Time(s)')
+ ylabel('Interfacial tension (N/m)')
+ grid on
+ hold off
 
 % t_axis = sqrt(t);
 % r_axis = sqrt(r);
@@ -126,12 +136,12 @@ grid on
 %ylabel('Subsurface concentration (molecule/m3)')
 %grid on
  
-%figure
-%plot(t, gamma1, 'r--o', t, gamma2, 'b--o');
-%legend('gamma1', 'gamma2');
-%xlabel('Time(s)')
-%ylabel('Surface coverage (molecule/m2)')
-%grid on
+figure
+plot(t, gamma1, 'r', t, gamma2, 'b');
+legend('gamma1', 'gamma2');
+xlabel('Time(s)')
+ylabel('Surface coverage (molecule/m2)')
+grid on
  
 %figure
 %loglog(c1, gamma1, 'r-.', c2, gamma2, 'b-.');
@@ -139,4 +149,3 @@ grid on
 %xlabel('Subsurface concentration (molecule/m3)')
 %ylabel('Surface coverage (molecule/m2)')
 %grid on
-
